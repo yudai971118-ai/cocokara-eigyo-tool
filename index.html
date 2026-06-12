@@ -645,15 +645,63 @@ function saveRoom(){
   closeModal('modal-room');showToast('✓ 保存しました');renderVacancy();
 }
 
-// ── CSVエクスポート（認証不要） ──────────────────────────────
-function syncToSheets(){
-  const rows=[['事業所名','担当者','種別','電話','メール','ランク','最終訪問','案件']];
-  DB.customers().forEach(c=>rows.push([c.name||'',c.person||'',c.type||'',c.tel||'',c.email||'',c.rank||'',c.lastVisit||'',c.hasActiveCase?'案件あり':'']));
-  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='COCOKARA_顧客管理_'+today()+'.csv';a.click();
-  showToast('✅ CSVをダウンロードしました（Excelで開けます）');
+// ── CSVエクスポート（保存先を選べる） ────────────────────────
+async function syncToSheets(){
+  // 全データをシートごとにCSV作成
+  const sheets = {
+    '顧客管理': {
+      headers: ['事業所名','担当者','種別','電話','メール','ランク','最終訪問','案件'],
+      rows: DB.customers().map(c=>[c.name||'',c.person||'',c.type||'',c.tel||'',c.email||'',c.rank||'',c.lastVisit||'',c.hasActiveCase?'案件あり':''])
+    },
+    '訪問記録': {
+      headers: ['日付','訪問先','訪問種別','ステータス','課題・ケース','次のアクション','期日'],
+      rows: DB.visits().map(v=>[v.date||'',v.customer||'',v.visitType||'',v.status||'',v.caseContent||'',v.nextAction||'',v.dueDate||''])
+    },
+    'フォローアップ': {
+      headers: ['アクション','顧客','優先度','期日','状態','完了日'],
+      rows: DB.followups().map(f=>[f.action||'',f.customer||'',f.priority||'',f.dueDate||'',f.status||'',f.completedDate||''])
+    }
+  };
+
+  const makeCSV = (headers, rows) => {
+    const all = [headers, ...rows];
+    return '﻿' + all.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  };
+
+  // File System Access API対応ブラウザは保存先を選択
+  if (window.showSaveFilePicker) {
+    // シート選択ダイアログ
+    const sheetKeys = Object.keys(sheets);
+    for (const key of sheetKeys) {
+      const s = sheets[key];
+      if (s.rows.length === 0) continue;
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: `COCOKARA_${key}_${today()}.csv`,
+          types: [{ description: 'CSV', accept: {'text/csv': ['.csv']} }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(makeCSV(s.headers, s.rows));
+        await writable.close();
+        showToast(`✅ ${key}を保存しました`);
+      } catch(e) {
+        if (e.name !== 'AbortError') showToast('⚠️ 保存をキャンセルしました');
+        break;
+      }
+    }
+  } else {
+    // 非対応ブラウザはダウンロード
+    for (const [key, s] of Object.entries(sheets)) {
+      if (s.rows.length === 0) continue;
+      const blob = new Blob([makeCSV(s.headers, s.rows)], {type:'text/csv;charset=utf-8'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `COCOKARA_${key}_${today()}.csv`;
+      a.click();
+      await new Promise(r => setTimeout(r, 500));
+    }
+    showToast('✅ CSVをダウンロードしました');
+  }
 }
 
 // ── 顧客一括インポート（Google Sheets公開JSON・認証不要） ─────
