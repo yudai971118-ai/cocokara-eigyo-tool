@@ -712,7 +712,7 @@ async function importCustomers(){
   btn.disabled=true;btn.textContent='⏳ 読込中…';
   const allCustomers=[];
   // 実際のシート名を直接指定
-  const sheetNames=['相談支援','病院','就労','その他'];
+  const sheetNames=['相談支援','病院','就労支援'];
   try{
     for(const name of sheetNames){
       try{
