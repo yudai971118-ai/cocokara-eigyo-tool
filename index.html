@@ -733,16 +733,28 @@ async function importCustomers(){
 }
 
 function parseSheetRows(rows,sheetName,out){
+  if(!rows.length) return;
+  // 1行目からヘッダーを判定して列マッピングを決定
+  const first=rows[0].c||[];
+  const getCell=idx=>(first[idx]&&first[idx].v!=null)?String(first[idx].v).trim():'';
+  const h0=getCell(0),h3=getCell(3);
+  // 病院シート形式: A=病院名, B=郵便番号, C=住所, D=電話, E=区
+  const isHospital = h0.includes('病院') || h0.includes('施設') || h0.includes('名');
+  // 相談支援/就労形式: A=種別, B=番号, C=法人名, D=事業所名, E=郵便番号, F=住所, G=電話
+  const isStandard = !isHospital;
+
   rows.forEach(function(row,i){
     const cells=row.c||[];
     const get=idx=>(cells[idx]&&cells[idx].v!=null)?String(cells[idx].v).trim():'';
-    // 列: A=種別, B=番号, C=法人名, D=事業所名, E=郵便番号, F=住所, G=電話, H=FAX
-    let name=get(3);if(!name) name=get(0);
-    const tel=get(6)||get(2);
-    const zip=get(4);const addr=get(5);const fax=get(7);
+    let name,tel,zip,addr,fax;
+    if(isHospital){
+      name=get(0); zip=get(1); addr=get(2); tel=get(3); fax='';
+    } else {
+      name=get(3)||get(0); zip=get(4); addr=get(5); tel=get(6); fax=get(7);
+    }
     if(!name||name.length<2) return;
-    if(/^[\d\-\s　]+$/.test(name)) return;
-    if(['事業所名','施設名','名称','NO_HEADER',':-:'].includes(name)) return;
+    if(/^[\d\-\s　〒]+$/.test(name)) return;
+    if(['事業所名','施設名','名称','病院名','NO_HEADER',':-:','種別'].includes(name)) return;
     out.push({id:'imp_'+sheetName+'_'+i,name,person:'',type:sheetName,tel,email:'',rank:'C',
       memo:[zip?'〒'+zip:'',addr,fax?'FAX:'+fax:''].filter(Boolean).join(' '),
       hasActiveCase:false,activeCaseNote:'',lastVisit:''});
