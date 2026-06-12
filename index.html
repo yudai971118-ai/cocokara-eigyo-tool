@@ -797,11 +797,10 @@ function doImport(newOnes){
 // ── 起動 ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',()=>{
   initData();
-  // 旧データのtype名を修正（就労→就労支援）
+  // 旧データの「就労」を削除
   const cs=DB.customers();
-  let fixed=false;
-  cs.forEach(c=>{if(c.type==='就労'){c.type='就労支援';fixed=true;}});
-  if(fixed) DB.saveCustomers(cs);
+  const filtered=cs.filter(c=>c.type!=='就労');
+  if(filtered.length!==cs.length) DB.saveCustomers(filtered);
   const d=new Date();
   document.getElementById('hd-date').textContent=d.toLocaleDateString('ja-JP',{month:'short',day:'numeric',weekday:'short'});
   document.getElementById('vq-date').value=d.toISOString().slice(0,10);
