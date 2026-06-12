@@ -663,35 +663,18 @@ async function importCustomers(){
   const btn=document.getElementById('import-btn');
   btn.disabled=true;btn.textContent='⏳ 読込中…';
   const allCustomers=[];
+  // 実際のシート名を直接指定
+  const sheetNames=['相談支援','病院','就労','その他'];
   try{
-    // 最初にシート名なしで取得（Sheet1相当）してシート一覧を把握
-    // gviz APIはシート名またはgidで指定可能
-    // まずシート名で試す
-    const candidates=['相談支援','病院','就労','その他','Sheet1','シート1'];
-    // gid=0,1,2,3でも試す
-    for(let gid=0;gid<6;gid++){
+    for(const name of sheetNames){
       try{
-        const url=`https://docs.google.com/spreadsheets/d/${IMPORT_SHEET_ID}/gviz/tq?tqx=out:json&headers=0&gid=${gid}`;
+        const url=`https://docs.google.com/spreadsheets/d/${IMPORT_SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
         const r=await fetch(url);const text=await r.text();
         if(!text.includes('"table"')) continue;
         const data=JSON.parse(text.replace(/^[^\(]+\(|\);\s*$/g,''));
         if(!data.table||!data.table.rows||data.table.rows.length<2) continue;
-        const label=candidates[gid]||('シート'+(gid+1));
-        parseSheetRows(data.table.rows,label,allCustomers);
+        parseSheetRows(data.table.rows,name,allCustomers);
       }catch(e){continue;}
-    }
-    // gidで取得できなかった場合はシート名で試す
-    if(allCustomers.length===0){
-      for(const name of candidates){
-        try{
-          const url=`https://docs.google.com/spreadsheets/d/${IMPORT_SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
-          const r=await fetch(url);const text=await r.text();
-          if(!text.includes('"table"')) continue;
-          const data=JSON.parse(text.replace(/^[^\(]+\(|\);\s*$/g,''));
-          if(!data.table||!data.table.rows||data.table.rows.length<2) continue;
-          parseSheetRows(data.table.rows,name,allCustomers);
-        }catch(e){continue;}
-      }
     }
     showImportDialog(allCustomers);
   }catch(err){
