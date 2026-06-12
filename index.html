@@ -191,6 +191,7 @@ textarea{resize:vertical;min-height:80px}
     <div style="display:flex;gap:8px">
       <input id="c-search" placeholder="🔍 検索…" style="width:130px" oninput="renderCustomers()"/>
       <button class="btn btn-o btn-sm" onclick="importCustomers()" id="import-btn">📥 一括インポート</button>
+      <button class="btn btn-sm" style="background:#fff;color:var(--red);border:1.5px solid var(--red)" onclick="resetImportedCustomers()">🗑 インポートデータをリセット</button>
       <button class="btn btn-p btn-sm" onclick="openAddC()">＋ 追加</button>
     </div>
   </div>
@@ -704,6 +705,17 @@ async function syncToSheets(){
   }
 }
 
+// ── インポートデータリセット ───────────────────────────────────
+function resetImportedCustomers(){
+  const cs=DB.customers();
+  const impCount=cs.filter(c=>c.id.startsWith('imp_')).length;
+  if(impCount===0){showToast('インポートデータはありません','e');return;}
+  if(!confirm(`インポートで追加された ${impCount} 件の顧客データを全て削除します。\n手動で追加したデータは残ります。\nよろしいですか？`)) return;
+  DB.saveCustomers(cs.filter(c=>!c.id.startsWith('imp_')));
+  buildCTypeTabs();renderCustomers();
+  showToast('🗑 '+impCount+'件のインポートデータを削除しました');
+}
+
 // ── 顧客一括インポート（Google Sheets公開JSON・認証不要） ─────
 const IMPORT_SHEET_ID='19E0JuiY95bu_TvLyad4iXlcOjrEEl-zl00WpBUkKlKQ';
 
@@ -797,10 +809,6 @@ function doImport(newOnes){
 // ── 起動 ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',()=>{
   initData();
-  // 旧データの「就労」を削除
-  const cs=DB.customers();
-  const filtered=cs.filter(c=>c.type!=='就労');
-  if(filtered.length!==cs.length) DB.saveCustomers(filtered);
   const d=new Date();
   document.getElementById('hd-date').textContent=d.toLocaleDateString('ja-JP',{month:'short',day:'numeric',weekday:'short'});
   document.getElementById('vq-date').value=d.toISOString().slice(0,10);
