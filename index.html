@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<!-- GAS template: scriptUrl injected by doGet -->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COCOKARA 営業ツール</title>
+<style>
+:root{--blue:#1a73e8;--green:#34a853;--red:#ea4335;--yellow:#f59e0b;--purple:#8b5cf6;
+  --blue-l:#e8f0fe;--green-l:#e6f4ea;--red-l:#fce8e6;--yellow-l:#fef3c7;
+  --border:#e2e8f0;--text:#1e293b;--sub:#64748b;--bg:#f0f4f8}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+header{background:var(--blue);color:#fff;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+header h1{font-size:17px;font-weight:700}
+.hd-date{font-size:12px;opacity:.85}
+.layout{display:flex;min-height:calc(100vh - 52px)}
+nav{width:190px;background:#fff;border-right:1px solid var(--border);padding:10px 0;flex-shrink:0}
+nav a{display:flex;align-items:center;gap:8px;padding:9px 16px;color:var(--text);text-decoration:none;font-size:13px;cursor:pointer;transition:.12s;border-radius:0 20px 20px 0;margin-right:8px}
+nav a:hover,nav a.active{background:var(--blue-l);color:var(--blue);font-weight:600}
+.nav-label{padding:12px 16px 4px;font-size:10px;color:var(--sub);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.nav-badge{background:var(--red);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:auto}
+main{flex:1;padding:20px;overflow-y:auto;padding-bottom:80px;max-width:1200px}
+.bn{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:none;height:58px;z-index:200}
+.bn-i{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;font-size:10px;color:var(--sub);border:none;background:none;padding:4px 0}
+.bn-i.active{color:var(--blue)}
+.bn-icon{font-size:19px;line-height:1}
+.card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:16px}
+.card-title{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid var(--blue)}
+.kpi.g{border-left-color:var(--green)}.kpi.r{border-left-color:var(--red)}.kpi.y{border-left-color:var(--yellow)}.kpi.p{border-left-color:var(--purple)}
+.kpi-label{font-size:11px;color:var(--sub);margin-bottom:3px}
+.kpi-val{font-size:26px;font-weight:800;line-height:1}
+.kpi-sub{font-size:10px;color:var(--sub);margin-top:3px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f8fafc;padding:7px 10px;text-align:left;font-weight:600;color:var(--sub);border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#f8fafc}
+.tbl-empty{text-align:center;padding:32px;color:var(--sub)}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-blue{background:var(--blue-l);color:var(--blue)}.b-green{background:var(--green-l);color:#1e7e34}
+.b-red{background:var(--red-l);color:#c62828}.b-yellow{background:var(--yellow-l);color:#92400e}
+.b-gray{background:#f1f5f9;color:var(--sub)}.b-purple{background:#ede9fe;color:#6d28d9}
+.rank-a{background:#fce8e6;color:#c62828;font-weight:700}.rank-b{background:var(--blue-l);color:var(--blue)}.rank-c{background:#f1f5f9;color:var(--sub)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:.12s;font-family:inherit;white-space:nowrap}
+.btn-p{background:var(--blue);color:#fff}.btn-p:hover{background:#1557b0}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:#2d9448}
+.btn-r{background:var(--red);color:#fff}
+.btn-o{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}.btn-o:hover{background:var(--blue-l)}
+.btn-ghost{background:transparent;color:var(--sub)}.btn-ghost:hover{background:#f1f5f9}
+.btn-sm{padding:4px 9px;font-size:12px;border-radius:6px}
+.btn-lg{padding:11px 22px;font-size:14px;border-radius:10px}
+.btn-w{width:100%;justify-content:center}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.fg label{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em}
+input,select,textarea{padding:9px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;transition:.12s;background:#fff;width:100%;color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,115,232,.12)}
+textarea{resize:vertical;min-height:80px}
+.fg-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center;padding:16px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:min(600px,98vw);max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modal-title{font-size:17px;font-weight:700}
+.modal-ft{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+.page{display:none}.page.active{display:block}
+.tab-btn{padding:6px 16px;background:#fff;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;color:var(--sub);transition:.12s}
+.tab-btn:hover,.tab-btn.active{background:var(--blue-l);color:var(--blue);border-color:var(--blue)}
+.urgency-sel{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.urg-btn{padding:10px;border:2px solid var(--border);border-radius:10px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;background:#fff;transition:.12s;line-height:1.4}
+.urg-0.sel{border-color:#94a3b8;background:#f1f5f9}
+.urg-1.sel{border-color:var(--green);background:var(--green-l);color:#1e7e34}
+.urg-2.sel{border-color:var(--yellow);background:var(--yellow-l);color:#92400e}
+.urg-3.sel{border-color:var(--red);background:var(--red-l);color:#c62828}
+.vacancy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.v-card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-top:4px solid var(--green)}
+.v-card.occupied{border-top-color:#e2e8f0;opacity:.75}
+#toast{display:none;position:fixed;bottom:70px;right:16px;background:#1e293b;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:999;animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.quick-header{background:linear-gradient(135deg,var(--blue),#6366f1);color:#fff;border-radius:14px;padding:18px;margin-bottom:16px}
+@media(max-width:700px){
+  nav{display:none}.bn{display:flex}
+  main{padding:12px;padding-bottom:70px}
+  .fg-2{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏠 COCOKARA 営業ツール</h1>
+  <div class="hd-date" id="hd-date"></div>
+</header>
+
+<div class="layout">
+<nav>
+  <div class="nav-label">メイン</div>
+  <a class="active" onclick="go('dashboard',this)">📊 ダッシュボード</a>
+  <div class="nav-label">営業</div>
+  <a onclick="go('visit-quick',this)">⚡ 訪問ログ入力</a>
+  <a onclick="go('visits',this)">📋 訪問記録</a>
+  <a onclick="go('followups',this)">✅ フォローアップ <span class="nav-badge" id="fu-badge" style="display:none">0</span></a>
+  <div class="nav-label">管理</div>
+  <a onclick="go('customers',this)">🏢 顧客管理</a>
+  <a onclick="go('vacancy',this)">🛏️ 空室管理</a>
+</nav>
+
+<main>
+
+<!-- ダッシュボード -->
+<div id="page-dashboard" class="page active">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h2 style="font-size:19px;font-weight:800">ダッシュボード</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-o btn-sm" onclick="renderDashboard()">🔄 更新</button>
+      <button class="btn btn-g btn-sm" onclick="syncToSheets()" id="sync-btn">📊 Sheetsに同期</button>
+    </div>
+  </div>
+  <div id="kpi-area" class="kpi-grid"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div class="card"><div class="card-title">⚠️ 期限間近タスク <button class="btn btn-sm btn-o" onclick="go('followups',null)">全件</button></div><div id="urgent-fu"></div></div>
+    <div class="card"><div class="card-title">⭐ 案件中の事業所</div><div id="active-cases"></div></div>
+  </div>
+  <div class="card"><div class="card-title">📋 最近の訪問 <button class="btn btn-sm btn-o" onclick="go('visits',null)">全件</button></div><div id="recent-visits"></div></div>
+</div>
+
+<!-- 訪問ログ -->
+<div id="page-visit-quick" class="page">
+  <div class="quick-header">
+    <h3 style="font-size:16px;margin-bottom:4px">⚡ 訪問ログ クイック入力</h3>
+    <p style="font-size:12px;opacity:.85">訪問直後に30秒で記録</p>
+  </div>
+  <div class="card">
+    <div class="fg-2">
+      <div class="fg"><label>📅 訪問日</label><input type="date" id="vq-date"/></div>
+      <div class="fg"><label>🚗 訪問種別</label><select id="vq-type"><option>初回訪問</option><option>定期訪問</option><option>フォロー訪問</option><option>電話</option></select></div>
+    </div>
+    <div class="fg"><label>🏢 訪問先</label><input id="vq-customer" list="clist" placeholder="事業所名"/><datalist id="clist"></datalist></div>
+    <div class="fg"><label>🎯 相手の課題・ケース</label><textarea id="vq-case" rows="3" placeholder="例：来月退院予定の40代男性。生活保護。精神的に不安定な時期のサポートを探している。"></textarea></div>
+    <div class="fg"><label>📌 今日のステータス</label>
+      <div class="urgency-sel" id="urg-sel">
+        <div class="urg-btn urg-0 sel" data-val="案件なし" onclick="selUrg(this)">⬜ 案件なし<br><small>挨拶・パンフ渡し</small></div>
+        <div class="urg-btn urg-1" data-val="見学調整中" onclick="selUrg(this)">🟢 見学調整中<br><small>見学を組む段階</small></div>
+        <div class="urg-btn urg-2" data-val="体験入居待ち" onclick="selUrg(this)">🟡 体験入居待ち<br><small>日程待ち</small></div>
+        <div class="urg-btn urg-3" data-val="即対応が必要" onclick="selUrg(this)">🔴 即対応が必要<br><small>今すぐ動く！</small></div>
+      </div>
+      <input type="hidden" id="vq-status" value="案件なし"/>
+    </div>
+    <div class="fg-2">
+      <div class="fg"><label>➡️ 次のアクション</label><input id="vq-next" placeholder="空室FAXを送る"/></div>
+      <div class="fg"><label>📅 期日</label><input type="date" id="vq-due"/></div>
+    </div>
+    <button class="btn btn-p btn-lg btn-w" onclick="saveVisit()">💾 保存する</button>
+  </div>
+</div>
+
+<!-- 訪問記録一覧 -->
+<div id="page-visits" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <h2 style="font-size:19px;font-weight:800">訪問記録</h2>
+    <button class="btn btn-p btn-sm" onclick="go('visit-quick',null)">⚡ 新規入力</button>
+  </div>
+  <div class="card"><div style="overflow-x:auto"><table><thead><tr>
+    <th>日付</th><th>訪問先</th><th>ステータス</th><th>課題・ケース</th><th>次のアクション</th><th>期日</th><th></th>
+  </tr></thead><tbody id="visit-tbody"></tbody></table></div></div>
+</div>
+
+<!-- フォローアップ -->
+<div id="page-followups" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <h2 style="font-size:19px;font-weight:800">フォローアップ</h2>
+    <button class="btn btn-p btn-sm" onclick="openModal('modal-fu')">＋ 追加</button>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+    <button class="tab-btn active" onclick="fFU('all',this)">すべて</button>
+    <button class="tab-btn" onclick="fFU('pending',this)">未対応</button>
+    <button class="tab-btn" onclick="fFU('overdue',this)">⚠️ 超過</button>
+    <button class="tab-btn" onclick="fFU('done',this)">完了</button>
+  </div>
+  <div class="card"><div style="overflow-x:auto"><table><thead><tr>
+    <th>優先</th><th>アクション</th><th>顧客</th><th>期日</th><th>状態</th><th>操作</th>
+  </tr></thead><tbody id="fu-tbody"></tbody></table></div></div>
+</div>
+
+<!-- 顧客管理 -->
+<div id="page-customers" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <h2 style="font-size:19px;font-weight:800">顧客管理</h2>
+    <div style="display:flex;gap:8px">
+      <input id="c-search" placeholder="🔍 検索…" style="width:130px" oninput="renderCustomers()"/>
+      <button class="btn btn-o btn-sm" onclick="importCustomers()" id="import-btn">📥 一括インポート</button>
+      <button class="btn btn-p btn-sm" onclick="openAddC()">＋ 追加</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="c-type-tabs">
+    <button class="tab-btn active" onclick="cTypeFilter('all',this)">すべて</button>
+  </div>
+  <div class="card"><div style="overflow-x:auto"><table><thead><tr>
+    <th>ランク</th><th>事業所名</th><th>担当者</th><th>連絡先</th><th>種別</th><th>最終訪問</th><th>案件</th><th>操作</th>
+  </tr></thead><tbody id="c-tbody"></tbody></table></div></div>
+</div>
+
+<!-- 空室管理 -->
+<div id="page-vacancy" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <h2 style="font-size:19px;font-weight:800">空室管理</h2>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="v-summary" style="font-size:13px;color:var(--sub)"></span>
+      <button class="btn btn-p btn-sm" onclick="openModal('modal-room')">＋ 部屋追加</button>
+    </div>
+  </div>
+  <div id="vacancy-grid" class="vacancy-grid"></div>
+</div>
+
+</main>
+</div>
+
+<!-- ボトムナビ -->
+<div class="bn">
+  <button class="bn-i active" onclick="go('dashboard',this)"><span class="bn-icon">📊</span>ホーム</button>
+  <button class="bn-i" onclick="go('visit-quick',this)"><span class="bn-icon">⚡</span>記録</button>
+  <button class="bn-i" onclick="go('followups',this)"><span class="bn-icon">✅</span>タスク</button>
+  <button class="bn-i" onclick="go('customers',this)"><span class="bn-icon">🏢</span>顧客</button>
+  <button class="bn-i" onclick="go('vacancy',this)"><span class="bn-icon">🛏️</span>空室</button>
+</div>
+
+<!-- モーダル: フォローアップ -->
+<div id="modal-fu" class="modal-bg"><div class="modal">
+  <div class="modal-hd"><div class="modal-title">フォローアップ追加</div><button class="btn btn-ghost btn-sm" onclick="closeModal('modal-fu')">✕</button></div>
+  <div class="fg"><label>アクション内容 *</label><input id="f-action" placeholder="○○事業所へ空室FAX送付"/></div>
+  <div class="fg-2">
+    <div class="fg"><label>期日</label><input id="f-due" type="date"/></div>
+    <div class="fg"><label>優先度</label><select id="f-pri"><option value="A">A（最優先）</option><option value="B" selected>B（通常）</option><option value="C">C（低め）</option></select></div>
+  </div>
+  <div class="fg"><label>関連顧客</label><input id="f-cust" list="clist" placeholder="事業所名（任意）"/></div>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('modal-fu')">キャンセル</button><button class="btn btn-p" onclick="saveFU()">💾 保存</button></div>
+</div></div>
+
+<!-- モーダル: 顧客 -->
+<div id="modal-customer" class="modal-bg"><div class="modal">
+  <div class="modal-hd"><div class="modal-title" id="cm-title">顧客追加</div><button class="btn btn-ghost btn-sm" onclick="closeModal('modal-customer')">✕</button></div>
+  <div class="fg"><label>事業所名 *</label><input id="cm-name"/></div>
+  <div class="fg-2">
+    <div class="fg"><label>担当者名</label><input id="cm-person"/></div>
+    <div class="fg"><label>種別</label><select id="cm-type"></select></div>
+  </div>
+  <div class="fg-2">
+    <div class="fg"><label>電話</label><input id="cm-tel"/></div>
+    <div class="fg"><label>メール</label><input id="cm-email" type="email"/></div>
+  </div>
+  <div class="fg-2">
+    <div class="fg"><label>ランク</label><select id="cm-rank"><option value="A">A（強い関係）</option><option value="B" selected>B（普通）</option><option value="C">C（薄い）</option></select></div>
+    <div class="fg"><label>案件あり</label><select id="cm-hascase"><option value="0">なし</option><option value="1">⭐ あり</option></select></div>
+  </div>
+  <div class="fg"><label>案件メモ</label><textarea id="cm-casenote" rows="2" placeholder="退院間近の○○さん…"></textarea></div>
+  <div class="fg"><label>備考</label><textarea id="cm-memo" rows="2"></textarea></div>
+  <input type="hidden" id="cm-id"/>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('modal-customer')">キャンセル</button><button class="btn btn-p" onclick="saveCustomer()">💾 保存</button></div>
+</div></div>
+
+<!-- モーダル: 部屋 -->
+<div id="modal-room" class="modal-bg"><div class="modal">
+  <div class="modal-hd"><div class="modal-title" id="rm-title">部屋追加</div><button class="btn btn-ghost btn-sm" onclick="closeModal('modal-room')">✕</button></div>
+  <div class="fg-2">
+    <div class="fg"><label>部屋番号 *</label><input id="rm-name" placeholder="101号室"/></div>
+    <div class="fg"><label>性別</label><select id="rm-gender"><option>男性</option><option>女性</option><option>男女可</option></select></div>
+  </div>
+  <div class="fg-2">
+    <div class="fg"><label>状況</label><select id="rm-status"><option>空室</option><option>入居中</option></select></div>
+    <div class="fg"><label>月額費用</label><input id="rm-fee" placeholder="85,000円"/></div>
+  </div>
+  <div class="fg"><label>対応障害種別</label><input id="rm-disability" placeholder="精神・知的・身体"/></div>
+  <div class="fg"><label>備考</label><input id="rm-memo"/></div>
+  <input type="hidden" id="rm-id"/>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('modal-room')">キャンセル</button><button class="btn btn-p" onclick="saveRoom()">💾 保存</button></div>
+</div></div>
+
+<!-- 削除確認 -->
+<div id="modal-confirm" class="modal-bg"><div class="modal" style="max-width:380px">
+  <div class="modal-hd"><div class="modal-title">⚠️ 確認</div><button class="btn btn-ghost btn-sm" onclick="closeModal('modal-confirm')">✕</button></div>
+  <p id="confirm-msg" style="font-size:14px;margin-bottom:16px"></p>
+  <div class="modal-ft"><button class="btn btn-ghost" onclick="closeModal('modal-confirm')">キャンセル</button><button class="btn btn-r" id="confirm-ok">削除する</button></div>
+</div></div>
+
+<div id="toast"></div>
+
+<script>
+// ── データ層（localStorage） ───────────────────────────────────
+const DB = {
+  get(k){ try{return JSON.parse(localStorage.getItem('cc_'+k)||'[]')}catch{return []} },
+  set(k,v){ localStorage.setItem('cc_'+k, JSON.stringify(v)) },
+  customers(){ return this.get('customers') },
+  visits(){    return this.get('visits') },
+  followups(){ return this.get('followups') },
+  vacancies(){ return this.get('vacancies') },
+  saveCustomers(v){ this.set('customers',v) },
+  saveVisits(v){    this.set('visits',v) },
+  saveFollowups(v){ this.set('followups',v) },
+  saveVacancies(v){ this.set('vacancies',v) },
+};
+
+// ── 初期データ（初回のみ） ─────────────────────────────────────
+function initData(){
+  if(!localStorage.getItem('cc_vacancies')){
+    DB.saveVacancies([
+      {id:'R1',room:'101号室',gender:'男性',status:'空室',disability:'精神・知的',fee:'85,000円',memo:''},
+      {id:'R2',room:'102号室',gender:'女性',status:'入居中',disability:'精神',fee:'85,000円',memo:''},
+      {id:'R3',room:'103号室',gender:'男女可',status:'空室',disability:'精神・知的・身体',fee:'85,000円',memo:''},
+    ]);
+  }
+}
+
+// ── ナビ ──────────────────────────────────────────────────────
+let fuFilter='all';
+function go(name,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav a,.bn-i').forEach(a=>a.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  const loaders={dashboard:renderDashboard,visits:renderVisits,followups:renderFollowups,customers:renderCustomers,vacancy:renderVacancy};
+  if(loaders[name]) loaders[name]();
+}
+
+// ── ユーティリティ ─────────────────────────────────────────────
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function diffDays(due){
+  if(!due) return null;
+  return Math.ceil((new Date(due)-new Date(today()))/(1000*60*60*24));
+}
+function vsBadge(s){
+  const m={'案件なし':'b-gray','見学調整中':'b-green','体験入居待ち':'b-yellow','即対応が必要':'b-red'};
+  return `<span class="badge ${m[s]||'b-gray'}">${s||'案件なし'}</span>`;
+}
+let toastT;
+function showToast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.style.background=type==='e'?'#c62828':'#1e293b';
+  el.style.display='block'; clearTimeout(toastT);
+  toastT=setTimeout(()=>el.style.display='none',3000);
+}
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function confirmDel(msg,fn){
+  document.getElementById('confirm-msg').textContent=msg;
+  document.getElementById('confirm-ok').onclick=()=>{closeModal('modal-confirm');fn();};
+  openModal('modal-confirm');
+}
+// 基本種別 + インポートで増えた種別を動的に管理
+const BASE_TYPES = ['相談支援専門員','病院MSW','就労支援事業所','行政・福祉事務所','その他'];
+
+function getTypes(){
+  const fromDB = [...new Set(DB.customers().map(c=>c.type).filter(Boolean))];
+  const all = [...new Set([...BASE_TYPES, ...fromDB])];
+  return all;
+}
+
+function buildTypeSelect(){
+  const sel = document.getElementById('cm-type');
+  if(!sel) return;
+  const types = getTypes();
+  const cur = sel.value;
+  sel.innerHTML = types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  if(cur && types.includes(cur)) sel.value = cur;
+}
+
+function buildClist(){
+  const dl=document.getElementById('clist');
+  if(dl) dl.innerHTML=DB.customers().map(c=>`<option value="${c.name}">`).join('');
+}
+
+// ── ダッシュボード ─────────────────────────────────────────────
+function renderDashboard(){
+  const customers=DB.customers(), visits=DB.visits(), followups=DB.followups(), vacancies=DB.vacancies();
+  const t=today();
+  const vacant=vacancies.filter(v=>v.status==='空室').length;
+  const activeCases=customers.filter(c=>c.hasActiveCase).length;
+  const pending=followups.filter(f=>f.status!=='完了');
+  const overdue=pending.filter(f=>f.dueDate&&diffDays(f.dueDate)<0).length;
+  const dueSoon=pending.filter(f=>f.dueDate&&diffDays(f.dueDate)>=0&&diffDays(f.dueDate)<=3).length;
+  const mo=new Date().getMonth(), yr=new Date().getFullYear();
+  const monthVisits=visits.filter(v=>{const d=new Date(v.date);return d.getMonth()===mo&&d.getFullYear()===yr;}).length;
+
+  document.getElementById('kpi-area').innerHTML=`
+    <div class="kpi g"><div class="kpi-label">🛏️ 空室数</div><div class="kpi-val" style="color:var(--green)">${vacant}</div><div class="kpi-sub">全${vacancies.length}室</div></div>
+    <div class="kpi p"><div class="kpi-label">⭐ 案件中</div><div class="kpi-val" style="color:var(--purple)">${activeCases}</div><div class="kpi-sub">事業所</div></div>
+    <div class="kpi r"><div class="kpi-label">⚠️ 期限超過</div><div class="kpi-val" style="color:var(--red)">${overdue}</div><div class="kpi-sub">タスク</div></div>
+    <div class="kpi y"><div class="kpi-label">🔔 3日以内</div><div class="kpi-val" style="color:var(--yellow)">${dueSoon}</div><div class="kpi-sub">タスク</div></div>
+    <div class="kpi"><div class="kpi-label">📅 今月の訪問</div><div class="kpi-val">${monthVisits}</div><div class="kpi-sub">件</div></div>`;
+
+  // 期限間近タスク
+  const urgent=pending.filter(f=>f.dueDate&&diffDays(f.dueDate)<=3).sort((a,b)=>{
+    const pa=a.priority==='A'?0:a.priority==='B'?1:2;
+    const pb=b.priority==='A'?0:b.priority==='B'?1:2;
+    return pa-pb||diffDays(a.dueDate)-diffDays(b.dueDate);
+  }).slice(0,6);
+  document.getElementById('urgent-fu').innerHTML=urgent.length===0
+    ?'<p class="tbl-empty">期限間近なし 🎉</p>'
+    :`<table style="width:100%;font-size:12px">${urgent.map(f=>{const d=diffDays(f.dueDate);return`<tr style="${d<0?'background:#fce8e6':''}">
+      <td style="padding:5px 6px"><span class="badge ${f.priority==='A'?'b-red':f.priority==='B'?'b-blue':'b-gray'}">${f.priority}</span></td>
+      <td style="padding:5px 6px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.action}</td>
+      <td style="padding:5px 6px;white-space:nowrap;font-size:11px">${f.dueDate}${d<0?` <strong style="color:var(--red)">${Math.abs(d)}日超</strong>`:''}</td>
+      <td><button class="btn btn-sm btn-g" onclick="doneFU('${f.id}')">完了</button></td>
+    </tr>`;}).join('')}</table>`;
+
+  // 案件中
+  const ac=customers.filter(c=>c.hasActiveCase);
+  document.getElementById('active-cases').innerHTML=ac.length===0
+    ?'<p class="tbl-empty">案件中なし</p>'
+    :ac.map(c=>`<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <div><strong>${c.name}</strong><span class="badge rank-${(c.rank||'c').toLowerCase()}" style="margin-left:6px">${c.rank||'C'}</span>
+      <div style="font-size:11px;color:var(--sub);margin-top:2px">${c.activeCaseNote||''}</div></div>
+      <button class="btn btn-sm btn-o" onclick="quickVisitFor('${c.name}')">⚡</button>
+    </div>`).join('');
+
+  // 最近の訪問
+  const rv=visits.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  document.getElementById('recent-visits').innerHTML=rv.length===0
+    ?'<p class="tbl-empty">訪問記録がありません</p>'
+    :`<table style="width:100%;font-size:12px"><thead><tr><th>日付</th><th>訪問先</th><th>ステータス</th><th>課題・ケース</th></tr></thead><tbody>
+    ${rv.map(v=>`<tr>
+      <td style="white-space:nowrap">${v.date}</td>
+      <td><strong>${v.customer}</strong></td>
+      <td>${vsBadge(v.status)}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.caseContent||''}</td>
+    </tr>`).join('')}</tbody></table>`;
+
+  updateFUBadge();
+}
+
+function updateFUBadge(){
+  const n=DB.followups().filter(f=>f.status!=='完了'&&f.dueDate&&diffDays(f.dueDate)<=3).length;
+  const b=document.getElementById('fu-badge');
+  if(n>0){b.textContent=n;b.style.display='inline-flex';}else b.style.display='none';
+}
+
+// ── 訪問ログ ──────────────────────────────────────────────────
+function selUrg(el){
+  document.querySelectorAll('.urg-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('vq-status').value=el.dataset.val;
+}
+function quickVisitFor(name){go('visit-quick',null);setTimeout(()=>{document.getElementById('vq-customer').value=name;},50);}
+function saveVisit(){
+  const d={id:uid(),date:document.getElementById('vq-date').value,customer:document.getElementById('vq-customer').value,visitType:document.getElementById('vq-type').value,caseContent:document.getElementById('vq-case').value,status:document.getElementById('vq-status').value,nextAction:document.getElementById('vq-next').value,dueDate:document.getElementById('vq-due').value};
+  if(!d.date||!d.customer){showToast('⚠️ 日付と訪問先を入力してください','e');return;}
+  const visits=DB.visits(); visits.unshift(d); DB.saveVisits(visits);
+  // 最終訪問日を更新
+  const customers=DB.customers();
+  const ci=customers.findIndex(c=>c.name===d.customer);
+  if(ci>=0){customers[ci].lastVisit=d.date;if(d.status!=='案件なし'){customers[ci].hasActiveCase=true;if(d.caseContent)customers[ci].activeCaseNote=d.caseContent;}DB.saveCustomers(customers);}
+  // 即対応・見学は自動フォローアップ作成
+  if(d.status==='即対応が必要'||d.status==='見学調整中'){
+    const fus=DB.followups();
+    fus.unshift({id:uid(),action:`【${d.status}】${d.customer}：${d.nextAction||d.caseContent||'確認'}`,dueDate:d.dueDate,customer:d.customer,priority:d.status==='即対応が必要'?'A':'B',status:'未対応',completedDate:''});
+    DB.saveFollowups(fus);
+  }
+  showToast('✓ 訪問ログを保存しました！');
+  ['vq-customer','vq-case','vq-next','vq-due'].forEach(id=>document.getElementById(id).value='');
+  selUrg(document.querySelector('.urg-0'));
+  buildClist(); updateFUBadge();
+}
+
+// ── 訪問記録一覧 ──────────────────────────────────────────────
+function renderVisits(){
+  const visits=DB.visits().slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const tb=document.getElementById('visit-tbody');
+  if(!visits.length){tb.innerHTML=`<tr><td colspan="7" class="tbl-empty">訪問記録がありません</td></tr>`;return;}
+  tb.innerHTML=visits.map(v=>`<tr style="${v.status==='即対応が必要'?'background:#fce8e6':''}">
+    <td style="white-space:nowrap;font-size:12px">${v.date}</td>
+    <td><strong>${v.customer}</strong></td>
+    <td>${vsBadge(v.status)}</td>
+    <td style="max-width:160px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.caseContent||''}</td>
+    <td style="font-size:12px">${v.nextAction||''}</td>
+    <td style="font-size:12px;white-space:nowrap">${v.dueDate||'–'}</td>
+    <td><button class="btn btn-sm btn-ghost" onclick="confirmDel('この訪問記録を削除しますか？',()=>delVisit('${v.id}'))">🗑️</button></td>
+  </tr>`).join('');
+}
+function delVisit(id){const v=DB.visits().filter(x=>x.id!==id);DB.saveVisits(v);showToast('削除しました');renderVisits();}
+
+// ── フォローアップ ─────────────────────────────────────────────
+function renderFollowups(){
+  let fus=DB.followups();
+  if(fuFilter==='pending') fus=fus.filter(x=>x.status!=='完了');
+  if(fuFilter==='overdue') fus=fus.filter(x=>x.status!=='完了'&&x.dueDate&&diffDays(x.dueDate)<0);
+  if(fuFilter==='done')    fus=fus.filter(x=>x.status==='完了');
+  fus=fus.slice().sort((a,b)=>{const pa=a.priority==='A'?0:a.priority==='B'?1:2,pb=b.priority==='A'?0:b.priority==='B'?1:2;return pa-pb||(a.dueDate||'').localeCompare(b.dueDate||'');});
+  const tb=document.getElementById('fu-tbody');
+  if(!fus.length){tb.innerHTML=`<tr><td colspan="6" class="tbl-empty">該当なし</td></tr>`;return;}
+  tb.innerHTML=fus.map(x=>{const d=diffDays(x.dueDate);const ov=x.status!=='完了'&&d!==null&&d<0;return`<tr style="${ov?'background:#fce8e6':d!==null&&d<=3&&x.status!=='完了'?'background:#fef3c7':''}">
+    <td><span class="badge ${x.priority==='A'?'b-red':x.priority==='B'?'b-blue':'b-gray'}">${x.priority}</span></td>
+    <td>${x.action}</td>
+    <td style="font-size:12px">${x.customer||''}</td>
+    <td style="white-space:nowrap;font-size:12px">${x.dueDate||'–'}${ov?` <strong style="color:var(--red)">超過!</strong>`:''}</td>
+    <td><span class="badge ${x.status==='完了'?'b-green':ov?'b-red':'b-yellow'}">${x.status}</span></td>
+    <td style="white-space:nowrap">
+      ${x.status!=='完了'?`<button class="btn btn-sm btn-g" onclick="doneFU('${x.id}')">完了</button>`:''}
+      <button class="btn btn-sm btn-ghost" onclick="confirmDel('このタスクを削除しますか？',()=>delFU('${x.id}'))">🗑️</button>
+    </td>
+  </tr>`;}).join('');
+}
+function fFU(f,el){fuFilter=f;document.querySelectorAll('#page-followups .tab-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderFollowups();}
+function doneFU(id){const fus=DB.followups();const i=fus.findIndex(x=>x.id===id);if(i>=0){fus[i].status='完了';fus[i].completedDate=today();DB.saveFollowups(fus);}showToast('✓ 完了！');renderFollowups();renderDashboard();}
+function saveFU(){
+  const d={id:uid(),action:document.getElementById('f-action').value,dueDate:document.getElementById('f-due').value,priority:document.getElementById('f-pri').value,customer:document.getElementById('f-cust').value,status:'未対応',completedDate:''};
+  if(!d.action){showToast('⚠️ アクション内容を入力','e');return;}
+  const fus=DB.followups();fus.unshift(d);DB.saveFollowups(fus);
+  closeModal('modal-fu');showToast('✓ 追加しました');
+  ['f-action','f-due','f-cust'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-pri').value='B';
+  renderFollowups();updateFUBadge();
+}
+function delFU(id){DB.saveFollowups(DB.followups().filter(x=>x.id!==id));showToast('削除しました');renderFollowups();updateFUBadge();}
+
+// ── 顧客管理 ──────────────────────────────────────────────────
+let cFilter='all';
+function cTypeFilter(type,el){
+  cFilter=type;
+  document.querySelectorAll('#c-type-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderCustomers();
+}
+function buildCTypeTabs(){
+  const tabs=document.getElementById('c-type-tabs');
+  if(!tabs) return;
+  const types=getTypes();
+  const used=new Set(DB.customers().map(c=>c.type).filter(Boolean));
+  tabs.innerHTML=`<button class="tab-btn ${cFilter==='all'?'active':''}" onclick="cTypeFilter('all',this)">すべて</button>`
+    +[...used].sort().map(t=>`<button class="tab-btn ${cFilter===t?'active':''}" onclick="cTypeFilter('${t}',this)">${t}</button>`).join('');
+}
+function renderCustomers(){
+  buildCTypeTabs();
+  const q=(document.getElementById('c-search')||{}).value?.toLowerCase()||'';
+  let cs=DB.customers().filter(c=>{
+    if(cFilter!=='all' && c.type!==cFilter) return false;
+    return !q||c.name.toLowerCase().includes(q)||(c.person||'').toLowerCase().includes(q);
+  });
+  const tb=document.getElementById('c-tbody');
+  if(!cs.length){tb.innerHTML=`<tr><td colspan="7" class="tbl-empty">顧客を登録してください</td></tr>`;return;}
+  tb.innerHTML=cs.map(c=>{
+    const tel=c.tel?(c.tel.replace(/[^\d+]/g,'')):'';
+    const email=c.email||'';
+    const gmailUrl=email?`https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(email)}&su=${encodeURIComponent('【COCOKARA】ご連絡')}&body=${encodeURIComponent('いつもお世話になっております。\nCOCOKARAグループホームの山内です。\n\n')}`:null;
+    const contact=`<div style="display:flex;flex-direction:column;gap:3px">
+      ${tel?`<a href="tel:${tel}" style="color:var(--blue);text-decoration:none;font-size:12px;display:flex;align-items:center;gap:3px" title="${c.tel}">📞 ${c.tel}</a>`:'<span style="font-size:11px;color:var(--sub)">電話なし</span>'}
+      ${gmailUrl?`<a href="${gmailUrl}" target="_blank" style="color:var(--green);text-decoration:none;font-size:12px;display:flex;align-items:center;gap:3px" title="${email}">✉️ メール送信</a>`:'<span style="font-size:11px;color:var(--sub)">メールなし</span>'}
+    </div>`;
+    return `<tr>
+    <td><span class="badge rank-${(c.rank||'c').toLowerCase()}">${c.rank||'C'}</span></td>
+    <td><strong>${c.name}</strong></td>
+    <td>${c.person||'–'}</td>
+    <td>${contact}</td>
+    <td><span class="badge b-gray">${c.type||''}</span></td>
+    <td style="font-size:12px;white-space:nowrap">${c.lastVisit||'未訪問'}</td>
+    <td>${c.hasActiveCase?'<span class="badge b-purple">⭐ 案件</span>':''}</td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-sm btn-o" onclick="editC('${c.id}')">編集</button>
+      <button class="btn btn-sm btn-ghost" onclick="confirmDel('この顧客を削除しますか？',()=>delC('${c.id}'))">🗑️</button>
+    </td>
+  </tr>`;}).join('');
+}
+function openAddC(){
+  document.getElementById('cm-id').value='';
+  document.getElementById('cm-title').textContent='顧客追加';
+  ['cm-name','cm-person','cm-tel','cm-email','cm-memo','cm-casenote'].forEach(id=>document.getElementById(id).value='');
+  buildTypeSelect();
+  document.getElementById('cm-type').value='相談支援専門員';
+  document.getElementById('cm-rank').value='B';
+  document.getElementById('cm-hascase').value='0';
+  openModal('modal-customer');
+}
+function editC(id){
+  const c=DB.customers().find(x=>x.id===id);if(!c)return;
+  document.getElementById('cm-id').value=c.id;
+  document.getElementById('cm-title').textContent='顧客編集';
+  document.getElementById('cm-name').value=c.name;
+  document.getElementById('cm-person').value=c.person||'';
+  buildTypeSelect();
+  document.getElementById('cm-type').value=c.type||'相談支援専門員';
+  document.getElementById('cm-tel').value=c.tel||'';
+  document.getElementById('cm-email').value=c.email||'';
+  document.getElementById('cm-rank').value=c.rank||'B';
+  document.getElementById('cm-memo').value=c.memo||'';
+  document.getElementById('cm-hascase').value=c.hasActiveCase?'1':'0';
+  document.getElementById('cm-casenote').value=c.activeCaseNote||'';
+  openModal('modal-customer');
+}
+function saveCustomer(){
+  const id=document.getElementById('cm-id').value;
+  const d={id:id||uid(),name:document.getElementById('cm-name').value,person:document.getElementById('cm-person').value,type:document.getElementById('cm-type').value,tel:document.getElementById('cm-tel').value,email:document.getElementById('cm-email').value,rank:document.getElementById('cm-rank').value,memo:document.getElementById('cm-memo').value,hasActiveCase:document.getElementById('cm-hascase').value==='1',activeCaseNote:document.getElementById('cm-casenote').value,lastVisit:''};
+  if(!d.name){showToast('⚠️ 事業所名を入力','e');return;}
+  const cs=DB.customers();
+  if(id){const i=cs.findIndex(x=>x.id===id);if(i>=0){d.lastVisit=cs[i].lastVisit;cs[i]=d;}else cs.push(d);}
+  else cs.push(d);
+  DB.saveCustomers(cs);
+  closeModal('modal-customer');showToast('✓ 保存しました');
+  buildClist();renderCustomers();
+}
+function delC(id){DB.saveCustomers(DB.customers().filter(x=>x.id!==id));showToast('削除しました');renderCustomers();}
+
+// ── 空室管理 ──────────────────────────────────────────────────
+function renderVacancy(){
+  const vacs=DB.vacancies();
+  const vacant=vacs.filter(v=>v.status==='空室').length;
+  document.getElementById('v-summary').textContent=`空室 ${vacant}室 / 全${vacs.length}室`;
+  document.getElementById('vacancy-grid').innerHTML=vacs.map(v=>`
+    <div class="v-card ${v.status!=='空室'?'occupied':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:18px;font-weight:800">${v.room}</div>
+        <button class="btn btn-sm btn-ghost" onclick="editRoom('${v.id}')">編集</button>
+      </div>
+      <div style="margin-bottom:8px"><span class="badge ${v.status==='空室'?'b-green':'b-gray'}">${v.status}</span><span class="badge b-gray" style="margin-left:4px">${v.gender}</span></div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:3px">対応：${v.disability||'–'}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">${v.fee||'–'}</div>
+      <button class="btn btn-w ${v.status==='空室'?'btn-o':'btn-g'}" onclick="toggleV('${v.id}','${v.status}')">${v.status==='空室'?'入居済みにする':'空室にする'}</button>
+    </div>`).join('');
+}
+function toggleV(id,cur){
+  const vacs=DB.vacancies();const i=vacs.findIndex(x=>x.id===id);
+  if(i>=0){vacs[i].status=cur==='空室'?'入居中':'空室';}
+  DB.saveVacancies(vacs);renderVacancy();showToast('✓ 更新しました');
+}
+function editRoom(id){
+  const v=DB.vacancies().find(x=>x.id===id);if(!v)return;
+  document.getElementById('rm-id').value=v.id;
+  document.getElementById('rm-title').textContent='部屋編集';
+  document.getElementById('rm-name').value=v.room;
+  document.getElementById('rm-gender').value=v.gender;
+  document.getElementById('rm-status').value=v.status;
+  document.getElementById('rm-fee').value=v.fee;
+  document.getElementById('rm-disability').value=v.disability||'';
+  document.getElementById('rm-memo').value=v.memo||'';
+  openModal('modal-room');
+}
+function saveRoom(){
+  const id=document.getElementById('rm-id').value;
+  const d={id:id||uid(),room:document.getElementById('rm-name').value,gender:document.getElementById('rm-gender').value,status:document.getElementById('rm-status').value,fee:document.getElementById('rm-fee').value,disability:document.getElementById('rm-disability').value,memo:document.getElementById('rm-memo').value};
+  if(!d.room){showToast('⚠️ 部屋番号を入力','e');return;}
+  const vacs=DB.vacancies();
+  if(id){const i=vacs.findIndex(x=>x.id===id);if(i>=0)vacs[i]=d;else vacs.push(d);}
+  else vacs.push(d);
+  DB.saveVacancies(vacs);
+  closeModal('modal-room');showToast('✓ 保存しました');renderVacancy();
+}
+
+// ── CSVエクスポート（認証不要） ──────────────────────────────
+function syncToSheets(){
+  const rows=[['事業所名','担当者','種別','電話','メール','ランク','最終訪問','案件']];
+  DB.customers().forEach(c=>rows.push([c.name||'',c.person||'',c.type||'',c.tel||'',c.email||'',c.rank||'',c.lastVisit||'',c.hasActiveCase?'案件あり':'']));
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='COCOKARA_顧客管理_'+today()+'.csv';a.click();
+  showToast('✅ CSVをダウンロードしました（Excelで開けます）');
+}
+
+// ── 顧客一括インポート（Google Sheets公開JSON・認証不要） ─────
+const IMPORT_SHEET_ID='19E0JuiY95bu_TvLyad4iXlcOjrEEl-zl00WpBUkKlKQ';
+
+async function importCustomers(){
+  const btn=document.getElementById('import-btn');
+  btn.disabled=true;btn.textContent='⏳ 読込中…';
+  const allCustomers=[];
+  try{
+    // 最初にシート名なしで取得（Sheet1相当）してシート一覧を把握
+    // gviz APIはシート名またはgidで指定可能
+    // まずシート名で試す
+    const candidates=['相談支援','病院','就労','その他','Sheet1','シート1'];
+    // gid=0,1,2,3でも試す
+    for(let gid=0;gid<6;gid++){
+      try{
+        const url=`https://docs.google.com/spreadsheets/d/${IMPORT_SHEET_ID}/gviz/tq?tqx=out:json&headers=0&gid=${gid}`;
+        const r=await fetch(url);const text=await r.text();
+        if(!text.includes('"table"')) continue;
+        const data=JSON.parse(text.replace(/^[^\(]+\(|\);\s*$/g,''));
+        if(!data.table||!data.table.rows||data.table.rows.length<2) continue;
+        const label=candidates[gid]||('シート'+(gid+1));
+        parseSheetRows(data.table.rows,label,allCustomers);
+      }catch(e){continue;}
+    }
+    // gidで取得できなかった場合はシート名で試す
+    if(allCustomers.length===0){
+      for(const name of candidates){
+        try{
+          const url=`https://docs.google.com/spreadsheets/d/${IMPORT_SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(name)}`;
+          const r=await fetch(url);const text=await r.text();
+          if(!text.includes('"table"')) continue;
+          const data=JSON.parse(text.replace(/^[^\(]+\(|\);\s*$/g,''));
+          if(!data.table||!data.table.rows||data.table.rows.length<2) continue;
+          parseSheetRows(data.table.rows,name,allCustomers);
+        }catch(e){continue;}
+      }
+    }
+    showImportDialog(allCustomers);
+  }catch(err){
+    showToast('⚠️ 読込エラー: '+err.message,'e');console.error(err);
+  }finally{
+    btn.disabled=false;btn.textContent='📥 一括インポート';
+  }
+}
+
+function parseSheetRows(rows,sheetName,out){
+  rows.forEach(function(row,i){
+    const cells=row.c||[];
+    const get=idx=>(cells[idx]&&cells[idx].v!=null)?String(cells[idx].v).trim():'';
+    // 列: A=種別, B=番号, C=法人名, D=事業所名, E=郵便番号, F=住所, G=電話, H=FAX
+    let name=get(3);if(!name) name=get(0);
+    const tel=get(6)||get(2);
+    const zip=get(4);const addr=get(5);const fax=get(7);
+    if(!name||name.length<2) return;
+    if(/^[\d\-\s　]+$/.test(name)) return;
+    if(['事業所名','施設名','名称','NO_HEADER',':-:'].includes(name)) return;
+    out.push({id:'imp_'+sheetName+'_'+i,name,person:'',type:sheetName,tel,email:'',rank:'C',
+      memo:[zip?'〒'+zip:'',addr,fax?'FAX:'+fax:''].filter(Boolean).join(' '),
+      hasActiveCase:false,activeCaseNote:'',lastVisit:''});
+  });
+}
+
+function showImportDialog(incoming){
+  const existing=DB.customers();
+  const existingNames=new Set(existing.map(c=>c.name));
+  const newOnes=incoming.filter(c=>!existingNames.has(c.name));
+  const byType={};
+  newOnes.forEach(c=>{byType[c.type]=(byType[c.type]||0)+1;});
+  const typeRows=Object.entries(byType).map(([t,n])=>`<div style="display:flex;justify-content:space-between;padding:3px 0"><span>${t}</span><strong>${n}件</strong></div>`).join('');
+  if(newOnes.length===0){showToast('すでに全件登録済みです');return;}
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px';
+  d.innerHTML=`<div style="background:#fff;border-radius:16px;padding:24px;max-width:440px;width:100%">
+    <div style="font-size:17px;font-weight:700;margin-bottom:12px">📥 インポート確認</div>
+    <div style="background:#f0f4f8;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px">
+      ${typeRows}
+      <div style="border-top:1px solid #e2e8f0;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between"><span>合計</span><strong>${newOnes.length}件</strong></div>
+      <div style="color:#64748b;font-size:11px;margin-top:4px">既存 ${existing.length}件 はそのまま保持</div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="this.closest('div[style*=inset]').remove()" class="btn btn-ghost" style="flex:1">キャンセル</button>
+      <button id="do-import-btn" class="btn btn-p" style="flex:1">登録する</button>
+    </div>
+  </div>`;
+  document.body.appendChild(d);
+  document.getElementById('do-import-btn').onclick=()=>{doImport(newOnes);d.remove();};
+}
+
+function doImport(newOnes){
+  const cs=DB.customers();
+  newOnes.forEach(c=>{c.id='imp_'+uid();cs.push(c);});
+  DB.saveCustomers(cs);buildClist();renderCustomers();
+  showToast('✅ '+newOnes.length+'件をインポートしました！');
+}
+
+// ── 起動 ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  initData();
+  const d=new Date();
+  document.getElementById('hd-date').textContent=d.toLocaleDateString('ja-JP',{month:'short',day:'numeric',weekday:'short'});
+  document.getElementById('vq-date').value=d.toISOString().slice(0,10);
+  buildClist();
+  renderDashboard();
+});
+</script>
+</body>
+</html>
