@@ -736,7 +736,13 @@ async function importCustomers(){
         parseSheetRows(data.table.rows,name,allCustomers);
       }catch(e){continue;}
     }
-    showImportDialog(allCustomers);
+    // 同じ名前が複数シートにある場合、最初のシートの1件のみ残す
+    const seenNames=new Set();
+    const deduped=allCustomers.filter(c=>{
+      if(seenNames.has(c.name)) return false;
+      seenNames.add(c.name); return true;
+    });
+    showImportDialog(deduped);
   }catch(err){
     showToast('⚠️ 読込エラー: '+err.message,'e');console.error(err);
   }finally{
